@@ -1,0 +1,950 @@
+import { useState } from "react";
+
+const ADMIN_PIN = "2026";
+
+const INITIAL_PLAYERS = [
+  { id:"joan",     name:"Joan",     baseScore:90 },
+  { id:"fran",     name:"Fran",     baseScore:70 },
+  { id:"rigol",    name:"Rigol",    baseScore:75 },
+  { id:"jaime",    name:"Jaime",    baseScore:70 },
+  { id:"larguras", name:"Larguras", baseScore:70 },
+  { id:"pablo",    name:"Pablo",    baseScore:95 },
+  { id:"pedro",    name:"Pedro",    baseScore:60 },
+  { id:"isaias",   name:"Isaías",   baseScore:75 },
+  { id:"carlos",   name:"Carlos",   baseScore:70 },
+];
+
+const INITIAL_COMPLETED = [
+  { id:"m1",  teams:"México - Sudáfrica",     score:"2-0", mvp:"J. Quiñones",   bets:{ joan:{score:"2-0",mvp:"Julián Quiñones"}, fran:{score:"4-1",mvp:"Quiñones"}, rigol:{score:"2-1",mvp:"Raúl Jiménez"}, jaime:{score:"2-1",mvp:"Oved Vargas"}, larguras:{score:"4-1",mvp:"Raúl Jiménez"}, pablo:{score:"2-0",mvp:"Raúl Jiménez"}, pedro:{score:"3-1",mvp:"Raúl Jiménez"}, isaias:{score:"2-1",mvp:"Edson Álvarez"}, carlos:{score:"3-1",mvp:"Fidalgo"} } },
+  { id:"m2",  teams:"Corea Sur - Rep. Checa", score:"2-1", mvp:"Hwang In-Beom", bets:{ fran:{score:"1-2",mvp:"Schick"}, rigol:{score:"1-1",mvp:"Son"}, jaime:{score:"1-2",mvp:"Schick"}, larguras:{score:"0-2",mvp:"Schick"}, pablo:{score:"2-1",mvp:"Son"}, pedro:{score:"2-2",mvp:"Schick"}, isaias:{score:"2-1",mvp:"Son"}, carlos:{score:"2-1",mvp:"Son"} } },
+  { id:"m3",  teams:"Canadá - Bosnia",        score:"1-1", mvp:"I. Koné",        bets:{ joan:{score:"1-1",mvp:"Demirovic"}, fran:{score:"2-1",mvp:"Jonathan David"}, rigol:{score:"2-1",mvp:"Jonathan David"}, jaime:{score:"2-0",mvp:"Buchanan"}, larguras:{score:"1-0",mvp:"Buchanan"}, pablo:{score:"1-0",mvp:"Jonathan David"}, pedro:{score:"1-2",mvp:"Demirovic"}, carlos:{score:"2-2",mvp:"Bajraktarevic"} } },
+  { id:"m4",  teams:"EEUU - Paraguay",        score:"4-1", mvp:"Balogun",        bets:{ joan:{score:"2-2",mvp:"Balogun"}, fran:{score:"2-1",mvp:"Pulisic"}, rigol:{score:"2-1",mvp:"Pulisic"}, jaime:{score:"1-1",mvp:"Pulisic"}, larguras:{score:"3-1",mvp:"Pulisic"}, pablo:{score:"3-1",mvp:"McKennie"}, pedro:{score:"1-2",mvp:"Julio Enciso"}, carlos:{score:"2-1",mvp:"Pulisic"} } },
+  { id:"m5",  teams:"Catar - Suiza",          score:"1-1", mvp:"Mahmud Abunada", bets:{ joan:{score:"0-3",mvp:"Xhaka"}, fran:{score:"0-2",mvp:"Xhaka"}, rigol:{score:"0-2",mvp:"Ndoye"}, jaime:{score:"1-2",mvp:"Xhaka"}, larguras:{score:"0-3",mvp:"Embolo"}, pablo:{score:"0-3",mvp:"Embolo"}, pedro:{score:"1-3",mvp:"Embolo"}, isaias:{score:"0-3",mvp:"Xhaka"}, carlos:{score:"0-3",mvp:"Ndoye"} } },
+  { id:"m6",  teams:"Brasil - Marruecos",     score:"1-1", mvp:"Vinicius Jr.",   bets:{ joan:{score:"2-1",mvp:"Raphinha"}, fran:{score:"2-1",mvp:"Vinicius"}, rigol:{score:"1-0",mvp:"Vinicius"}, jaime:{score:"2-1",mvp:"Raphinha"}, larguras:{score:"3-1",mvp:"Vinicius"}, pablo:{score:"2-1",mvp:"Raphinha"}, pedro:{score:"3-2",mvp:"Raphinha"}, isaias:{score:"3-1",mvp:"Vinicius"}, carlos:{score:"3-1",mvp:"Vinicius"} } },
+  { id:"m7",  teams:"Haití - Escocia",        score:"0-1", mvp:"J. McGinn",      bets:{ joan:{score:"1-2",mvp:"Che Adams"}, fran:{score:"0-1",mvp:"Che Adams"}, rigol:{score:"0-2",mvp:"Che Adams"}, jaime:{score:"0-2",mvp:"McTominay"}, larguras:{score:"0-3",mvp:"McTominay"}, pablo:{score:"1-3",mvp:"McTominay"}, pedro:{score:"0-4",mvp:"McTominay"}, isaias:{score:"0-2",mvp:"McTominay"}, carlos:{score:"0-3",mvp:"Che Adams"} } },
+  { id:"m8",  teams:"Australia - Turquía",    score:"2-0", mvp:"N. Irankunda",   bets:{ joan:{score:"0-1",mvp:"Güler"}, fran:{score:"0-3",mvp:"Çalhanoğlu"}, rigol:{score:"0-1",mvp:"B. Yilmaz"}, jaime:{score:"1-2",mvp:"Arda Güler"}, larguras:{score:"0-3",mvp:"Arda Güler"}, pablo:{score:"0-3",mvp:"Çalhanoğlu"}, pedro:{score:"1-3",mvp:"Arda Güler"}, isaias:{score:"1-2",mvp:"Arda Güler"}, carlos:{score:"0-2",mvp:"Güler"} } },
+  { id:"m9",  teams:"Alemania - Curazao",     score:"7-1", mvp:"K. Havertz",     bets:{ joan:{score:"5-0",mvp:"Havertz"}, fran:{score:"7-0",mvp:"Musiala"}, rigol:{score:"3-0",mvp:"Havertz"}, jaime:{score:"8-0",mvp:"Musiala"}, larguras:{score:"6-0",mvp:"Musiala"}, pablo:{score:"4-0",mvp:"Havertz"}, pedro:{score:"4-0",mvp:"Florian Wirtz"}, isaias:{score:"5-0",mvp:"Musiala"}, carlos:{score:"4-0",mvp:"Havertz"} } },
+  { id:"m10", teams:"Países Bajos - Japón",   score:"2-2", mvp:"Van Dijk",       bets:{ joan:{score:"1-1",mvp:"Malen"}, fran:{score:"2-1",mvp:"Gakpo"}, rigol:{score:"2-2",mvp:"Take Kubo"}, jaime:{score:"2-2",mvp:"Gakpo"}, larguras:{score:"3-1",mvp:"Malen"}, pablo:{score:"2-2",mvp:"Gakpo"}, pedro:{score:"2-2",mvp:"Ayase Ueda"}, isaias:{score:"2-2",mvp:"Gakpo"}, carlos:{score:"2-1",mvp:"Gakpo"} } },
+  { id:"m11", teams:"Costa Marfil - Ecuador", score:"1-0", mvp:"V. Diomande",    bets:{ joan:{score:"1-2",mvp:"Fofana"}, fran:{score:"0-0",mvp:"Fofana"}, rigol:{score:"0-1",mvp:"Enner Valencia"}, jaime:{score:"1-2",mvp:"Enner Valencia"}, larguras:{score:"1-3",mvp:"Gonzalo Plata"}, pablo:{score:"0-1",mvp:"Moisés Caicedo"}, pedro:{score:"1-2",mvp:"Enner Valencia"}, isaias:{score:"2-1",mvp:"Haller"}, carlos:{score:"2-2",mvp:"Diomandé"} } },
+  { id:"m12", teams:"Suecia - Túnez",         score:"5-1", mvp:"A. Isak",        bets:{ joan:{score:"3-1",mvp:"Gyökeres"}, fran:{score:"1-0",mvp:"Gyökeres"}, rigol:{score:"2-0",mvp:"Gyökeres"}, jaime:{score:"2-1",mvp:"Gyökeres"}, larguras:{score:"2-0",mvp:"Gyökeres"}, pablo:{score:"3-1",mvp:"Gyökeres"}, pedro:{score:"2-1",mvp:"Isak"}, isaias:{score:"1-1",mvp:"Isak"}, carlos:{score:"2-0",mvp:"Gyökeres"} } },
+  { id:"m13", teams:"España - Cabo Verde",    score:"0-0", mvp:"Vozinha",        bets:{ joan:{score:"4-0",mvp:"Oyarzabal"}, fran:{score:"6-0",mvp:"Fabián Ruiz"}, rigol:{score:"4-0",mvp:"Oyarzabal"}, jaime:{score:"5-0",mvp:"Nico Williams"}, larguras:{score:"6-0",mvp:"Ferran Torres"}, pablo:{score:"4-0",mvp:"Oyarzabal"}, pedro:{score:"5-0",mvp:"Pedri"}, isaias:{score:"5-1",mvp:"Pedri"}, carlos:{score:"3-0",mvp:"Oyarzabal"} } },
+  { id:"m14", teams:"Bélgica - Egipto",       score:"1-1", mvp:"Emam Ashour",    bets:{ joan:{score:"2-1",mvp:"Doku"}, fran:{score:"3-1",mvp:"Doku"}, rigol:{score:"2-1",mvp:"Trossard"}, jaime:{score:"1-1",mvp:"Salah"}, larguras:{score:"2-1",mvp:"Doku"}, pablo:{score:"2-0",mvp:"Doku"}, pedro:{score:"2-2",mvp:"Marmoush"}, isaias:{score:"2-0",mvp:"Doku"}, carlos:{score:"2-0",mvp:"De Bruyne"} } },
+  { id:"m15", teams:"Arabia Saudí - Uruguay", score:"1-1", mvp:"F. Valverde",    bets:{ joan:{score:"1-2",mvp:"Darwin Núñez"}, fran:{score:"0-2",mvp:"Ugarte"}, rigol:{score:"0-2",mvp:"Darwin Núñez"}, jaime:{score:"0-3",mvp:"Darwin Núñez"}, larguras:{score:"0-2",mvp:"Valverde"}, pablo:{score:"0-2",mvp:"Valverde"}, isaias:{score:"1-2",mvp:"Darwin Núñez"}, carlos:{score:"2-0",mvp:"Fede Viñas"} } },
+  { id:"m16", teams:"Irán - Nueva Zelanda",   score:"2-2", mvp:"R. Rezaeian",    bets:{ fran:{score:"1-0",mvp:"Taremi"}, rigol:{score:"2-0",mvp:"Taremi"}, jaime:{score:"2-1",mvp:"Taremi"}, larguras:{score:"2-1",mvp:"M. Ghayedi"}, pablo:{score:"2-1",mvp:"Taremi"}, isaias:{score:"1-1",mvp:"Taremi"} } },
+  { id:"m17", teams:"Francia - Senegal",      score:"3-1", mvp:"M. Olise",       bets:{ joan:{score:"3-1",mvp:"Mbappé"}, fran:{score:"3-0",mvp:"Mbappé"}, rigol:{score:"2-1",mvp:"Mbappé"}, jaime:{score:"4-1",mvp:"Dembelé"}, larguras:{score:"3-1",mvp:"Mbappé"}, pablo:{score:"3-1",mvp:"Mbappé"}, pedro:{score:"2-1",mvp:"Mbappé"}, isaias:{score:"2-1",mvp:"Mbappé"}, carlos:{score:"3-1",mvp:"Mbappé"} } },
+  { id:"m18", teams:"Irak - Noruega",         score:"1-4", mvp:"E. Haaland",     bets:{ joan:{score:"0-2",mvp:"Haaland"}, fran:{score:"0-4",mvp:"Haaland"}, rigol:{score:"0-3",mvp:"Haaland"}, jaime:{score:"1-2",mvp:"Haaland"}, larguras:{score:"0-3",mvp:"Haaland"}, pablo:{score:"0-3",mvp:"Haaland"}, pedro:{score:"0-3",mvp:"Sorloth"}, isaias:{score:"0-2",mvp:"Odegaard"} } },
+  { id:"m19", teams:"Argentina - Argelia",    score:"3-0", mvp:"L. Messi",       bets:{ joan:{score:"2-1",mvp:"Messi"}, fran:{score:"3-0",mvp:"Messi"}, rigol:{score:"2-1",mvp:"Messi"}, jaime:{score:"2-0",mvp:"Messi"}, larguras:{score:"3-1",mvp:"Messi"}, pablo:{score:"2-1",mvp:"Messi"}, pedro:{score:"2-1",mvp:"Julián"}, isaias:{score:"1-0",mvp:"Julián"} } },
+  { id:"m20", teams:"Austria - Jordania",     score:"3-1", mvp:"Ali Olwan",      bets:{ joan:{score:"3-0",mvp:"Schmid"}, fran:{score:"3-0",mvp:"Arnautovic"}, rigol:{score:"2-0",mvp:"Sabitzer"}, jaime:{score:"3-1",mvp:"Sabitzer"}, larguras:{score:"3-0",mvp:"Sabitzer"}, pablo:{score:"2-0",mvp:"Sabitzer"}, pedro:{score:"3-0",mvp:"Sabitzer"}, isaias:{score:"2-0",mvp:"Laimer"}, carlos:{score:"2-0",mvp:"Sabitzer"} } },
+];
+
+const UPCOMING = [
+  "Portugal - RD Congo","Inglaterra - Croacia","Ghana - Panamá","Uzbekistán - Colombia",
+  "República Checa - Sudáfrica","Suiza - Bosnia Herzegovina","Canadá - Catar","México - Corea del Sur",
+  "EEUU - Australia","Escocia - Marruecos","Brasil - Haití","Turquía - Paraguay",
+  "Países Bajos - Suecia","Alemania - Costa de Marfil","Ecuador - Curazao","Túnez - Japón",
+  "España - Arabia Saudí","Bélgica - Irán","Uruguay - Cabo Verde","Nueva Zelanda - Egipto",
+  "Argentina - Austria","Francia - Irak","Noruega - Senegal","Jordania - Argelia",
+  "Portugal - Uzbekistán","Inglaterra - Ghana","Panamá - Croacia","Colombia - RD Congo",
+  "Bosnia - Catar","Suiza - Canadá",
+];
+
+// ─── Helpers de puntuación ────────────────────────────────────────────────────
+function getWinner(s) {
+  if (!s?.includes("-")) return null;
+  const [a,b] = s.split("-").map(Number);
+  return a>b?"home":b>a?"away":"draw";
+}
+function stripAcc(s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+function normMvp(s)  { return stripAcc((s||"").toLowerCase().replace(/\./g,"").replace(/\s+/g," ").trim()); }
+function mvpOk(real,bet) {
+  const r=normMvp(real),b=normMvp(bet);
+  if(!r||!b) return false;
+  if(r===b||r.includes(b)||b.includes(r)) return true;
+  return r.split(" ").pop()===b.split(" ").pop();
+}
+function calcPts(match,bet) {
+  if(!bet) return {winner:false,exact:false,mvp:false,total:0};
+  const rW=getWinner(match.score),bW=getWinner(bet.score);
+  const winner=!!(rW&&bW&&rW===bW);
+  const exact=winner&&match.score===bet.score;
+  const mvp=mvpOk(match.mvp,bet.mvp);
+  return {winner,exact,mvp,total:(winner?5:0)+(exact?5:0)+(mvp?5:0)};
+}
+function fmt(iso) {
+  if(!iso) return "";
+  const d=new Date(iso);
+  return d.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit"})+" "+d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
+}
+
+const MEDAL=["🥇","🥈","🥉"];
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+export default function App() {
+  // Core state
+  const [players,    setPlayers]    = useState(INITIAL_PLAYERS);
+  const [completed,  setCompleted]  = useState(INITIAL_COMPLETED);
+  const [events,     setEvents]     = useState([]);
+  const [tab,        setTab]        = useState(0);
+  const [notif,      setNotif]      = useState(null);
+
+  // Auth
+  const [admin,      setAdmin]      = useState(false);
+  const [pin,        setPin]        = useState("");
+  const [showLogin,  setShowLogin]  = useState(false);
+
+  // Bet form
+  const [betForm,    setBetForm]    = useState({pid:"",eid:"",score:"",mvp:""});
+
+  // Result form
+  const [resForm,    setResForm]    = useState({eid:"",score:"",mvp:""});
+
+  // New event form
+  const [newRound,   setNewRound]   = useState("");
+  const [newTeams,   setNewTeams]   = useState("");
+
+  // Admin edit modals
+  const [editBet,    setEditBet]    = useState(null); // {eid,pid,score,mvp}
+  const [editEv,     setEditEv]     = useState(null); // {id,round,teams}
+  const [editRes,    setEditRes]    = useState(null); // {eid,score,mvp}
+  const [editPlayer, setEditPlayer] = useState(null); // {id,name,baseScore}
+  const [newPName,   setNewPName]   = useState("");
+
+  // Confirm dialog
+  const [confirm,    setConfirm]    = useState(null); // {msg, onOk}
+
+  // Admin: edit historical match (jornada 1)
+  const [editHist,   setEditHist]   = useState(null); // {id,score,mvp}
+
+  const sorted = [...players].sort((a,b)=>b.baseScore-a.baseScore);
+  const openEvs   = events.filter(e=>!e.result);
+  const closedEvs = events.filter(e=> e.result);
+
+  // ── Notifications & confirm ──
+  function ok(msg)  { setNotif({msg,t:"ok"});  setTimeout(()=>setNotif(null),3500); }
+  function err(msg) { setNotif({msg,t:"err"}); setTimeout(()=>setNotif(null),3500); }
+  function ask(msg, onOk) { setConfirm({msg,onOk}); }
+
+  // ── Auth ──
+  function tryLogin() {
+    if(pin===ADMIN_PIN){ setAdmin(true); setPin(""); setShowLogin(false); ok("✅ Sesión de admin iniciada"); }
+    else { err("PIN incorrecto"); setPin(""); }
+  }
+
+  // ── Events ──
+  function createEvent() {
+    if(!admin) return err("Solo admins");
+    if(!newRound.trim()||!newTeams.trim()) return err("Completa jornada y partido");
+    const id=`ev_${Date.now()}`;
+    setEvents(p=>[...p,{id,round:newRound.trim(),teams:newTeams.trim(),bets:{},result:null}]);
+    setNewRound(""); setNewTeams("");
+    ok(`✅ Partido creado: ${newTeams.trim()}`);
+  }
+
+  function doDeleteEvent(eid) {
+    setEvents(p=>p.filter(e=>e.id!==eid));
+    setCompleted(p=>p.filter(m=>m.id!==eid));
+    ok("Partido eliminado");
+  }
+
+  function saveEditEv() {
+    if(!editEv) return;
+    setEvents(p=>p.map(e=>e.id===editEv.id?{...e,round:editEv.round,teams:editEv.teams}:e));
+    setEditEv(null); ok("Partido actualizado");
+  }
+
+  // ── Bets ──
+  function placeBet() {
+    const {pid,eid,score,mvp}=betForm;
+    if(!pid||!eid) return err("Selecciona tu nombre y el partido");
+    if(!score.match(/^\d+-\d+$/)) return err("Formato X-Y, ej: 2-1");
+    if(!mvp.trim()) return err("Indica el MVP");
+    const ev=events.find(e=>e.id===eid);
+    if(!ev) return;
+    if(!admin&&ev.bets[pid]) return err("Ya has apostado en este partido");
+    setEvents(p=>p.map(e=>e.id===eid?{...e,bets:{...e.bets,[pid]:{score,mvp:mvp.trim(),ts:new Date().toISOString()}}}:e));
+    ok(`✅ Apuesta de ${players.find(p=>p.id===pid)?.name} guardada`);
+    setBetForm(f=>({...f,score:"",mvp:""}));
+  }
+
+  function doDeleteBet(eid,pid) {
+    setEvents(p=>p.map(e=>{
+      if(e.id!==eid) return e;
+      const b={...e.bets}; delete b[pid]; return {...e,bets:b};
+    }));
+    ok("Apuesta eliminada");
+  }
+
+  function saveEditBet() {
+    if(!editBet) return;
+    if(!editBet.score.match(/^\d+-\d+$/)) return err("Formato X-Y");
+    setEvents(p=>p.map(e=>e.id===editBet.eid
+      ?{...e,bets:{...e.bets,[editBet.pid]:{score:editBet.score,mvp:editBet.mvp,ts:new Date().toISOString()}}}:e));
+    setEditBet(null); ok("Apuesta actualizada");
+  }
+
+  // ── Results ──
+  function submitResult() {
+    if(!admin) return err("Solo admins");
+    const {eid,score,mvp}=resForm;
+    if(!eid) return err("Selecciona el partido");
+    if(!score.match(/^\d+-\d+$/)) return err("Formato X-Y");
+    if(!mvp.trim()) return err("Indica el MVP");
+    const ev=events.find(e=>e.id===eid);
+    if(!ev) return;
+    if(ev.result) return err("Ya tiene resultado. Usa editar.");
+    setCompleted(p=>[...p,{id:ev.id,teams:ev.teams,score,mvp:mvp.trim(),bets:ev.bets}]);
+    setEvents(p=>p.map(e=>e.id===eid?{...e,result:{score,mvp:mvp.trim()}}:e));
+    setResForm({eid:"",score:"",mvp:""}); ok("🏁 Resultado guardado");
+  }
+
+  function saveEditRes() {
+    if(!editRes||!editRes.score.match(/^\d+-\d+$/)) return err("Formato X-Y");
+    setEvents(p=>p.map(e=>e.id===editRes.eid?{...e,result:{score:editRes.score,mvp:editRes.mvp}}:e));
+    setCompleted(p=>p.map(m=>m.id===editRes.eid?{...m,score:editRes.score,mvp:editRes.mvp}:m));
+    setEditRes(null); ok("Resultado actualizado");
+  }
+
+  function reopenEvent(eid) {
+    setEvents(p=>p.map(e=>e.id===eid?{...e,result:null}:e));
+    setCompleted(p=>p.filter(m=>m.id!==eid));
+    ok("Partido reabierto");
+  }
+
+  // ── Historical results (Jornada 1) ──
+  function saveEditHist() {
+    if(!editHist||!editHist.score.match(/^\d+-\d+$/)) return err("Formato X-Y");
+    setCompleted(p=>p.map(m=>m.id===editHist.id?{...m,score:editHist.score,mvp:editHist.mvp}:m));
+    setEditHist(null); ok("Resultado histórico actualizado");
+  }
+
+  function doDeleteHist(id) {
+    setCompleted(p=>p.filter(m=>m.id!==id));
+    ok("Partido histórico eliminado");
+  }
+
+  // ── Players ──
+  function addPlayer() {
+    const name=newPName.trim();
+    if(!name) return err("Escribe un nombre");
+    if(players.find(p=>p.name.toLowerCase()===name.toLowerCase())) return err("Ya existe");
+    const id=name.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");
+    setPlayers(p=>[...p,{id,name,baseScore:0}]);
+    setNewPName(""); ok(`✅ ${name} añadido`);
+  }
+
+  function saveEditPlayer() {
+    if(!editPlayer) return;
+    setPlayers(p=>p.map(x=>x.id===editPlayer.id?{...x,name:editPlayer.name,baseScore:Number(editPlayer.baseScore)||0}:x));
+    setEditPlayer(null); ok("Jugador actualizado");
+  }
+
+  function doDeletePlayer(pid) {
+    setPlayers(p=>p.filter(x=>x.id!==pid));
+    ok("Jugador eliminado");
+  }
+
+  // ── Nuclear options ──
+  function clearAllBetsInEvent(eid) {
+    setEvents(p=>p.map(e=>e.id===eid?{...e,bets:{}}:e));
+    ok("Todas las apuestas del partido eliminadas");
+  }
+
+  function clearAllEvents() {
+    setEvents([]); setCompleted(INITIAL_COMPLETED); ok("Todos los eventos nuevos eliminados");
+  }
+
+  function clearHistorical() {
+    setCompleted(p=>p.filter(m=>events.find(e=>e.id===m.id))); ok("Resultados históricos (Jornada 1) eliminados");
+  }
+
+  function resetEverything() {
+    setPlayers(INITIAL_PLAYERS); setCompleted(INITIAL_COMPLETED); setEvents([]); ok("Todo reiniciado al estado inicial");
+  }
+
+  // ─────────────────── RENDER ───────────────────────────────────────────────
+
+  const TABS = ["🏆 Clasificación","📅 Jornadas","🎯 Nueva Jornada",...(admin?["⚙️ Admin"]:[])] ;
+
+  return (
+    <div style={C.root}>
+
+      {/* ── HEADER ── */}
+      <header style={C.header}>
+        <div style={C.hInner}>
+          <div style={C.logo}>
+            <span style={{fontSize:40}}>⚽</span>
+            <div>
+              <div style={C.logoT}>PORRA MUNDIAL</div>
+              <div style={C.logoS}>Liga de campeones del pronóstico</div>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+            <div style={C.scoreboard}>
+              {sorted.slice(0,3).map((p,i)=>(
+                <div key={p.id} style={C.miniScore}>
+                  <span style={{fontSize:18}}>{MEDAL[i]}</span>
+                  <span style={{fontWeight:600}}>{p.name}</span>
+                  <span style={{fontWeight:800,color:"#f59e0b",marginLeft:4}}>{p.baseScore}pts</span>
+                </div>
+              ))}
+            </div>
+            {admin
+              ? <div style={{display:"flex",alignItems:"center",gap:8,background:"#0c1a0f",border:"1px solid #16a34a",borderRadius:8,padding:"6px 14px"}}>
+                  <span style={{color:"#4ade80",fontWeight:700,fontSize:13}}>🔑 Admin</span>
+                  <button onClick={()=>setAdmin(false)} style={C.bGhost}>Salir</button>
+                </div>
+              : <button onClick={()=>setShowLogin(v=>!v)} style={C.bOutline}>🔑 Admin</button>
+            }
+          </div>
+        </div>
+      </header>
+
+      {/* ── LOGIN BAR ── */}
+      {showLogin&&!admin&&(
+        <div style={C.loginBar}>
+          <span style={{color:"#f59e0b",fontWeight:700,fontSize:13}}>🔑 Acceso administrador</span>
+          <input style={{...C.inp,width:110,letterSpacing:4,textAlign:"center",fontSize:18}}
+            type="password" placeholder="PIN" maxLength={4}
+            value={pin} onChange={e=>setPin(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&tryLogin()} autoFocus />
+          <button style={C.bPrimary} onClick={tryLogin}>Entrar</button>
+          <button onClick={()=>{setShowLogin(false);setPin("");}} style={C.bGhost}>Cancelar</button>
+        </div>
+      )}
+
+      {/* ── NOTIFICATION ── */}
+      {notif&&<div style={{...C.notif,background:notif.t==="err"?"#dc2626":"#16a34a"}}>{notif.msg}</div>}
+
+      {/* ── CONFIRM DIALOG ── */}
+      {confirm&&(
+        <div style={C.overlay}>
+          <div style={C.dialog}>
+            <div style={{fontSize:22,marginBottom:12}}>⚠️</div>
+            <div style={{color:"#e2e8f0",fontWeight:700,marginBottom:20,textAlign:"center"}}>{confirm.msg}</div>
+            <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+              <button style={C.bDanger} onClick={()=>{confirm.onOk();setConfirm(null);}}>Confirmar</button>
+              <button style={C.bOutline} onClick={()=>setConfirm(null)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── NAV ── */}
+      <nav style={C.nav}>
+        {TABS.map((t,i)=>(
+          <button key={i} onClick={()=>setTab(i)}
+            style={{...C.tabBtn,...(tab===i?C.tabOn:{})}}>
+            {t}
+          </button>
+        ))}
+      </nav>
+
+      <main style={C.main}>
+
+        {/* ════════════ TAB 0: CLASIFICACIÓN ════════════ */}
+        {tab===0&&(
+          <div>
+            <h2 style={C.h2}>🏆 Clasificación General</h2>
+            <div style={{borderRadius:14,overflow:"hidden",border:"1px solid #1e293b",marginBottom:32}}>
+              <div style={{...C.row,padding:"10px 20px",background:"#1e293b",color:"#64748b",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"1px"}}>
+                <span style={{width:40}}>#</span>
+                <span style={{flex:1}}>Jugador</span>
+                <span style={{width:90,textAlign:"right"}}>Puntos</span>
+              </div>
+              {sorted.map((p,i)=>(
+                <div key={p.id} style={{...C.row,padding:"14px 20px",borderBottom:"1px solid #1e293b",background:i<3?"#0c1a0f":"#0f172a"}}>
+                  <span style={{width:40,fontSize:22}}>{MEDAL[i]||i+1}</span>
+                  <span style={{flex:1,fontWeight:700,fontSize:18}}>{p.name}</span>
+                  <span style={{width:90,textAlign:"right",fontWeight:900,fontSize:22,color:"#f59e0b"}}>{p.baseScore}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Desglose jornada 1 */}
+            <h2 style={C.h2}>📊 Desglose — Jornada 1</h2>
+            <BetTable matches={completed.filter(m=>!events.find(e=>e.id===m.id))} players={players} />
+
+            {/* Desglose jornadas nuevas */}
+            {closedEvs.length>0&&(
+              <>
+                <h2 style={{...C.h2,marginTop:32}}>📊 Desglose — Jornadas nuevas</h2>
+                <BetTable
+                  matches={closedEvs.map(ev=>{
+                    const m=completed.find(x=>x.id===ev.id);
+                    return m?{...m,roundLabel:ev.round}:null;
+                  }).filter(Boolean)}
+                  players={players}
+                  showRound
+                />
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ════════════ TAB 1: JORNADAS ════════════ */}
+        {tab===1&&(
+          <div>
+            <h2 style={C.h2}>🔓 Partidos abiertos</h2>
+            {openEvs.length===0&&<div style={C.empty}>No hay partidos abiertos. Créalos en "🎯 Nueva Jornada".</div>}
+
+            {openEvs.map(ev=>{
+              const available=players.filter(p=>!ev.bets[p.id]);
+              const isMyForm=betForm.eid===ev.id;
+              return(
+                <div key={ev.id} style={C.card}>
+                  {/* Cabecera */}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,gap:12}}>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,color:"#4ade80",fontWeight:700,textTransform:"uppercase",letterSpacing:"1px"}}>⚽ {ev.round}</div>
+                      <div style={{fontSize:22,fontWeight:900,color:"#f0fdf4",marginTop:4}}>{ev.teams}</div>
+                    </div>
+                    <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
+                      <span style={{color:"#64748b",fontSize:13}}>{Object.keys(ev.bets).length}/{players.length}</span>
+                      {admin&&<>
+                        <button style={C.bEdit} onClick={()=>setEditEv({id:ev.id,round:ev.round,teams:ev.teams})}>✏️</button>
+                        <button style={C.bDel} onClick={()=>ask(`¿Borrar partido "${ev.teams}"?`,()=>doDeleteEvent(ev.id))}>🗑️</button>
+                        <button style={{...C.bDel,fontSize:10,padding:"4px 8px"}} onClick={()=>ask("¿Borrar TODAS las apuestas de este partido?",()=>clearAllBetsInEvent(ev.id))}>🧹 Apuestas</button>
+                      </>}
+                    </div>
+                  </div>
+
+                  {/* Edit event inline */}
+                  {admin&&editEv?.id===ev.id&&(
+                    <div style={{background:"#1e293b",borderRadius:10,padding:12,marginBottom:14,display:"flex",gap:8,flexWrap:"wrap"}}>
+                      <input style={{...C.inp,width:130}} value={editEv.round} onChange={e=>setEditEv(x=>({...x,round:e.target.value}))} placeholder="Jornada"/>
+                      <input style={{...C.inp,flex:1,minWidth:180}} value={editEv.teams} onChange={e=>setEditEv(x=>({...x,teams:e.target.value}))} placeholder="Equipos"/>
+                      <button style={C.bPrimary} onClick={saveEditEv}>Guardar</button>
+                      <button style={C.bGhost} onClick={()=>setEditEv(null)}>Cancelar</button>
+                    </div>
+                  )}
+
+                  {/* Apuestas ya hechas */}
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:14}}>
+                    {players.filter(p=>ev.bets[p.id]).map(p=>{
+                      const b=ev.bets[p.id];
+                      return(
+                        <div key={p.id} style={C.betChip}>
+                          <div>
+                            <span style={{fontWeight:700,color:"#4ade80"}}>{p.name}</span>
+                            <span style={{fontSize:11,color:"#94a3b8",marginLeft:6}}>{b.score} · MVP: {b.mvp}</span>
+                            {b.ts&&<span style={{fontSize:10,color:"#475569",marginLeft:6}}>{fmt(b.ts)}</span>}
+                          </div>
+                          {admin&&(
+                            <div style={{display:"flex",gap:4,marginLeft:8}}>
+                              <button style={C.bEditSm} onClick={()=>setEditBet({eid:ev.id,pid:p.id,score:b.score,mvp:b.mvp})}>✏️</button>
+                              <button style={C.bDelSm} onClick={()=>ask(`¿Borrar apuesta de ${p.name}?`,()=>doDeleteBet(ev.id,p.id))}>🗑️</button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {players.filter(p=>!ev.bets[p.id]).map(p=>(
+                      <div key={p.id} style={C.betChipEmpty}>
+                        <span style={{color:"#475569",fontWeight:600}}>{p.name}</span>
+                        <span style={{fontSize:11,color:"#334155",marginLeft:6}}>sin apuesta</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Edit bet inline (admin) */}
+                  {admin&&editBet?.eid===ev.id&&(
+                    <div style={{background:"#1e293b",borderRadius:10,padding:12,marginBottom:14}}>
+                      <div style={{fontSize:12,color:"#f59e0b",fontWeight:700,marginBottom:8}}>
+                        ✏️ Editando apuesta de {players.find(p=>p.id===editBet.pid)?.name}
+                      </div>
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                        <input style={{...C.inp,width:90}} value={editBet.score} onChange={e=>setEditBet(x=>({...x,score:e.target.value}))} placeholder="X-Y"/>
+                        <input style={{...C.inp,flex:1,minWidth:140}} value={editBet.mvp} onChange={e=>setEditBet(x=>({...x,mvp:e.target.value}))} placeholder="MVP"/>
+                        <button style={C.bPrimary} onClick={saveEditBet}>Guardar</button>
+                        <button style={C.bGhost} onClick={()=>setEditBet(null)}>Cancelar</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Formulario apuesta */}
+                  {available.length>0&&(
+                    <div style={{borderTop:"1px solid #1e293b",paddingTop:14}}>
+                      <div style={C.label}>Tu apuesta — resultado exacto y MVP obligatorios</div>
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                        <select style={C.sel}
+                          value={isMyForm?betForm.pid:""}
+                          onChange={e=>setBetForm({pid:e.target.value,eid:ev.id,score:"",mvp:""})}>
+                          <option value="">— Soy —</option>
+                          {available.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                        <input style={{...C.inp,width:90}} placeholder="Ej: 2-1"
+                          value={isMyForm?betForm.score:""} onChange={e=>setBetForm(f=>({...f,score:e.target.value,eid:ev.id}))}/>
+                        <input style={{...C.inp,flex:1,minWidth:140}} placeholder="Nombre del MVP"
+                          value={isMyForm?betForm.mvp:""} onChange={e=>setBetForm(f=>({...f,mvp:e.target.value,eid:ev.id}))}/>
+                        <button style={C.bPrimary} onClick={placeBet}>Apostar</button>
+                      </div>
+                    </div>
+                  )}
+                  {available.length===0&&<div style={{borderTop:"1px solid #1e293b",paddingTop:12,color:"#4ade80",fontWeight:700,fontSize:13}}>✅ Todos han apostado</div>}
+
+                  {/* Resultado oficial */}
+                  <div style={{borderTop:"1px solid #1e293b",paddingTop:14,marginTop:14}}>
+                    <div style={{...C.label,color:"#f59e0b"}}>🔑 Resultado oficial</div>
+                    {!admin
+                      ? <div style={{color:"#475569",fontSize:13}}>Solo los administradores pueden cerrar el partido.</div>
+                      : ev.result
+                        ? <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+                            <span style={{color:"#4ade80",fontWeight:700}}>✅ {ev.result.score} · MVP: {ev.result.mvp}</span>
+                            <button style={C.bEdit} onClick={()=>setEditRes({eid:ev.id,score:ev.result.score,mvp:ev.result.mvp})}>✏️ Editar</button>
+                            <button style={C.bDel} onClick={()=>ask("¿Reabrir este partido? Se perderá el resultado.",()=>reopenEvent(ev.id))}>🔓 Reabrir</button>
+                          </div>
+                        : <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                            <input style={{...C.inp,width:90}} placeholder="X-Y"
+                              value={resForm.eid===ev.id?resForm.score:""} onChange={e=>setResForm({eid:ev.id,score:e.target.value,mvp:resForm.eid===ev.id?resForm.mvp:""})}/>
+                            <input style={{...C.inp,flex:1,minWidth:140}} placeholder="MVP real"
+                              value={resForm.eid===ev.id?resForm.mvp:""} onChange={e=>setResForm(f=>({...f,mvp:e.target.value,eid:ev.id}))}/>
+                            <button style={C.bDanger} onClick={submitResult}>Cerrar partido</button>
+                          </div>
+                    }
+                    {admin&&editRes?.eid===ev.id&&(
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:10}}>
+                        <input style={{...C.inp,width:90}} value={editRes.score} onChange={e=>setEditRes(x=>({...x,score:e.target.value}))}/>
+                        <input style={{...C.inp,flex:1,minWidth:140}} value={editRes.mvp} onChange={e=>setEditRes(x=>({...x,mvp:e.target.value}))}/>
+                        <button style={C.bPrimary} onClick={saveEditRes}>Guardar</button>
+                        <button style={C.bGhost} onClick={()=>setEditRes(null)}>Cancelar</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Partidos cerrados */}
+            {closedEvs.length>0&&(
+              <>
+                <h2 style={{...C.h2,marginTop:32}}>✅ Partidos cerrados</h2>
+                {closedEvs.map(ev=>{
+                  const m=completed.find(x=>x.id===ev.id);
+                  return(
+                    <div key={ev.id} style={{...C.card,opacity:0.9}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:10}}>
+                        <div>
+                          <div style={{fontSize:12,color:"#4ade80",fontWeight:700}}>{ev.round}</div>
+                          <div style={{fontSize:20,fontWeight:900,color:"#f0fdf4"}}>{ev.teams}</div>
+                        </div>
+                        <div style={{textAlign:"right"}}>
+                          <div style={{color:"#f59e0b",fontWeight:800,fontSize:18}}>{ev.result.score}</div>
+                          <div style={{color:"#94a3b8",fontSize:12}}>MVP: {ev.result.mvp}</div>
+                          {admin&&(
+                            <div style={{display:"flex",gap:6,marginTop:8,justifyContent:"flex-end"}}>
+                              <button style={C.bEdit} onClick={()=>setEditRes({eid:ev.id,score:ev.result.score,mvp:ev.result.mvp})}>✏️ Resultado</button>
+                              <button style={C.bEdit} onClick={()=>ask("¿Reabrir este partido?",()=>reopenEvent(ev.id))}>🔓 Reabrir</button>
+                              <button style={C.bDel}  onClick={()=>ask(`¿Borrar "${ev.teams}" y todas sus apuestas?`,()=>doDeleteEvent(ev.id))}>🗑️ Borrar</button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {admin&&editRes?.eid===ev.id&&(
+                        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
+                          <input style={{...C.inp,width:90}} value={editRes.score} onChange={e=>setEditRes(x=>({...x,score:e.target.value}))}/>
+                          <input style={{...C.inp,flex:1,minWidth:140}} value={editRes.mvp} onChange={e=>setEditRes(x=>({...x,mvp:e.target.value}))}/>
+                          <button style={C.bPrimary} onClick={saveEditRes}>Guardar</button>
+                          <button style={C.bGhost} onClick={()=>setEditRes(null)}>Cancelar</button>
+                        </div>
+                      )}
+                      <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                        {players.map(p=>{
+                          const bet=ev.bets[p.id];
+                          const pts=m?calcPts(m,bet).total:0;
+                          return(
+                            <div key={p.id} style={{...C.betChip,borderColor:pts>0?"#f59e0b44":"#1e293b"}}>
+                              <div>
+                                <span style={{fontWeight:700,color:"#e2e8f0"}}>{p.name}</span>
+                                {bet
+                                  ?<><span style={{fontSize:11,color:"#94a3b8",marginLeft:6}}>{bet.score} · {bet.mvp}</span>
+                                     {bet.ts&&<span style={{fontSize:10,color:"#475569",marginLeft:6}}>{fmt(bet.ts)}</span>}</>
+                                  :<span style={{fontSize:11,color:"#334155",marginLeft:6}}>—</span>
+                                }
+                              </div>
+                              {bet&&<span style={{marginLeft:10,fontWeight:900,fontSize:14,color:pts===15?"#c084fc":pts>=10?"#22d3ee":pts>=5?"#a3e635":"#475569"}}>{pts>0?`+${pts}`:0}{pts===15?" ★":""}</span>}
+                              {admin&&bet&&(
+                                <div style={{display:"flex",gap:4,marginLeft:8}}>
+                                  <button style={C.bEditSm} onClick={()=>setEditBet({eid:ev.id,pid:p.id,score:bet.score,mvp:bet.mvp})}>✏️</button>
+                                  <button style={C.bDelSm} onClick={()=>ask(`¿Borrar apuesta de ${p.name}?`,()=>doDeleteBet(ev.id,p.id))}>🗑️</button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+
+            {/* Jornada 1 histórico */}
+            <h2 style={{...C.h2,marginTop:32}}>📜 Jornada 1 (Excel)</h2>
+            {completed.filter(m=>!events.find(e=>e.id===m.id)).map(m=>(
+              <div key={m.id} style={{...C.card,padding:"12px 20px"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+                  <span style={{fontWeight:600,color:"#e2e8f0"}}>{m.teams}</span>
+                  <div style={{display:"flex",gap:12,alignItems:"center"}}>
+                    {admin&&editHist?.id===m.id
+                      ? <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+                          <input style={{...C.inp,width:80}} value={editHist.score} onChange={e=>setEditHist(x=>({...x,score:e.target.value}))} placeholder="X-Y"/>
+                          <input style={{...C.inp,width:140}} value={editHist.mvp}   onChange={e=>setEditHist(x=>({...x,mvp:e.target.value}))}   placeholder="MVP"/>
+                          <button style={C.bPrimary} onClick={saveEditHist}>Guardar</button>
+                          <button style={C.bGhost} onClick={()=>setEditHist(null)}>Cancelar</button>
+                        </div>
+                      : <>
+                          <span style={{color:"#f59e0b",fontWeight:800}}>{m.score}</span>
+                          <span style={{color:"#94a3b8",fontSize:12}}>MVP: {m.mvp}</span>
+                          {admin&&<>
+                            <button style={C.bEdit} onClick={()=>setEditHist({id:m.id,score:m.score,mvp:m.mvp})}>✏️</button>
+                            <button style={C.bDel}  onClick={()=>ask(`¿Borrar "${m.teams}"?`,()=>doDeleteHist(m.id))}>🗑️</button>
+                          </>}
+                        </>
+                    }
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ════════════ TAB 2: NUEVA JORNADA ════════════ */}
+        {tab===2&&(
+          <div>
+            {!admin
+              ?<div style={{...C.card,textAlign:"center",padding:"40px 24px"}}>
+                <div style={{fontSize:40,marginBottom:12}}>🔑</div>
+                <div style={{color:"#e2e8f0",fontWeight:700,fontSize:18,marginBottom:8}}>Zona de administrador</div>
+                <div style={{color:"#64748b",marginBottom:20}}>Solo los admins pueden crear partidos.</div>
+                <button style={C.bPrimary} onClick={()=>setShowLogin(true)}>Iniciar sesión como admin</button>
+              </div>
+              :<>
+                <h2 style={C.h2}>🎯 Crear nuevo partido</h2>
+                <div style={C.card}>
+                  <div style={C.label}>Jornada / Ronda</div>
+                  <input style={{...C.inp,width:"100%",marginBottom:12}} placeholder="Ej: Jornada 2, Octavos de final…" value={newRound} onChange={e=>setNewRound(e.target.value)}/>
+                  <div style={C.label}>Partido</div>
+                  <input style={{...C.inp,width:"100%",marginBottom:16}} placeholder="Ej: España - Alemania" value={newTeams} onChange={e=>setNewTeams(e.target.value)}/>
+                  <div style={C.label}>O elige de los pendientes</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
+                    {UPCOMING.map(m=>(
+                      <button key={m} style={{...C.chip,...(newTeams===m?C.chipOn:{})}} onClick={()=>setNewTeams(m)}>{m}</button>
+                    ))}
+                  </div>
+                  <button style={{...C.bPrimary,width:"100%",padding:14,fontSize:16,borderRadius:10}} onClick={createEvent}>
+                    ✅ Crear partido y abrir apuestas
+                  </button>
+                </div>
+                <div style={C.card}>
+                  <div style={C.label}>📋 Sistema de puntuación</div>
+                  <div style={{color:"#64748b",fontSize:12,marginBottom:12}}>Cada apuesta debe incluir <strong style={{color:"#e2e8f0"}}>resultado exacto</strong> y <strong style={{color:"#e2e8f0"}}>MVP del partido</strong>.</div>
+                  {[["⚽ Aciertas ganador o empate","+5 pts"],["🎯 Aciertas el resultado exacto","+5 pts"],["⭐ Aciertas el MVP del partido","+5 pts"]].map(([l,p])=>(
+                    <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid #1e293b"}}>
+                      <span style={{color:"#e2e8f0"}}>{l}</span><span style={{color:"#f59e0b",fontWeight:800}}>{p}</span>
+                    </div>
+                  ))}
+                  <div style={{marginTop:12,padding:"10px 14px",background:"#0c1a0f",borderRadius:8,color:"#4ade80",fontSize:12}}>Máximo 15 pts por partido si aciertas los tres.</div>
+                </div>
+              </>
+            }
+          </div>
+        )}
+
+        {/* ════════════ TAB 3: ADMIN PANEL ════════════ */}
+        {tab===3&&admin&&(
+          <div>
+            <h2 style={C.h2}>⚙️ Panel de Administrador</h2>
+
+            {/* ── Zona peligrosa ── */}
+            <div style={{...C.card,border:"1px solid #dc262644",marginBottom:24}}>
+              <div style={{...C.label,color:"#f87171",fontSize:13,marginBottom:16}}>🚨 Acciones globales</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
+                <button style={{...C.bDanger,fontSize:13}} onClick={()=>ask("¿Borrar TODOS los partidos nuevos y sus apuestas? Los de la Jornada 1 se conservan.",clearAllEvents)}>
+                  🗑️ Borrar todos los eventos nuevos
+                </button>
+                <button style={{...C.bDanger,fontSize:13}} onClick={()=>ask("¿Eliminar todos los resultados históricos de la Jornada 1?",clearHistorical)}>
+                  🗑️ Borrar resultados Jornada 1
+                </button>
+                <button style={{...C.bDanger,fontSize:13,background:"#7f1d1d"}} onClick={()=>ask("⚠️ ESTO REINICIA TODO: jugadores, partidos, apuestas y resultados al estado original. ¿Seguro?",resetEverything)}>
+                  💥 Reset total
+                </button>
+              </div>
+            </div>
+
+            {/* ── Jugadores ── */}
+            <div style={C.card}>
+              <div style={{...C.label,fontSize:13,color:"#f59e0b",marginBottom:16}}>👥 Gestión de Jugadores</div>
+              <div style={{overflowX:"auto"}}>
+                <table style={{...C.table,marginBottom:0}}>
+                  <thead>
+                    <tr>
+                      <th style={C.th}>Jugador</th>
+                      <th style={C.th}>Puntos base</th>
+                      <th style={C.th}>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {players.map(p=>(
+                      <tr key={p.id}>
+                        <td style={C.td}>
+                          {editPlayer?.id===p.id
+                            ?<input style={{...C.inp,width:120}} value={editPlayer.name} onChange={e=>setEditPlayer(x=>({...x,name:e.target.value}))}/>
+                            :<span style={{fontWeight:700}}>{p.name}</span>
+                          }
+                        </td>
+                        <td style={C.td}>
+                          {editPlayer?.id===p.id
+                            ?<input style={{...C.inp,width:80}} type="number" value={editPlayer.baseScore} onChange={e=>setEditPlayer(x=>({...x,baseScore:e.target.value}))}/>
+                            :<span style={{color:"#f59e0b",fontWeight:700}}>{p.baseScore}</span>
+                          }
+                        </td>
+                        <td style={{...C.td}}>
+                          {editPlayer?.id===p.id
+                            ?<div style={{display:"flex",gap:6}}>
+                               <button style={C.bPrimary} onClick={saveEditPlayer}>Guardar</button>
+                               <button style={C.bGhost} onClick={()=>setEditPlayer(null)}>Cancelar</button>
+                             </div>
+                            :<div style={{display:"flex",gap:6}}>
+                               <button style={C.bEdit} onClick={()=>setEditPlayer({id:p.id,name:p.name,baseScore:p.baseScore})}>✏️ Editar</button>
+                               <button style={C.bDel} onClick={()=>ask(`¿Eliminar a ${p.name}?`,()=>doDeletePlayer(p.id))}>🗑️ Borrar</button>
+                             </div>
+                          }
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{borderTop:"1px solid #1e293b",paddingTop:14,marginTop:12,display:"flex",gap:8,flexWrap:"wrap"}}>
+                <input style={{...C.inp,flex:1,minWidth:160}} placeholder="Nombre nuevo jugador" value={newPName} onChange={e=>setNewPName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPlayer()}/>
+                <button style={C.bPrimary} onClick={addPlayer}>➕ Añadir jugador</button>
+              </div>
+            </div>
+
+            {/* ── Partidos abiertos ── */}
+            {openEvs.length>0&&(
+              <div style={C.card}>
+                <div style={{...C.label,fontSize:13,color:"#f59e0b",marginBottom:16}}>🔓 Gestión partidos abiertos</div>
+                {openEvs.map(ev=>(
+                  <div key={ev.id} style={{borderBottom:"1px solid #1e293b",paddingBottom:16,marginBottom:16}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
+                      <div>
+                        <div style={{color:"#4ade80",fontSize:12,fontWeight:700}}>{ev.round}</div>
+                        <div style={{color:"#f0fdf4",fontWeight:700,fontSize:16}}>{ev.teams}</div>
+                        <div style={{color:"#64748b",fontSize:12,marginTop:4}}>{Object.keys(ev.bets).length} apuestas registradas</div>
+                      </div>
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                        <button style={C.bEdit} onClick={()=>setEditEv({id:ev.id,round:ev.round,teams:ev.teams})}>✏️ Editar partido</button>
+                        <button style={{...C.bDel,fontSize:12}} onClick={()=>ask("¿Borrar todas las apuestas de este partido?",()=>clearAllBetsInEvent(ev.id))}>🧹 Borrar apuestas</button>
+                        <button style={C.bDel} onClick={()=>ask(`¿Borrar partido "${ev.teams}"?`,()=>doDeleteEvent(ev.id))}>🗑️ Borrar partido</button>
+                      </div>
+                    </div>
+                    {editEv?.id===ev.id&&(
+                      <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>
+                        <input style={{...C.inp,width:130}} value={editEv.round} onChange={e=>setEditEv(x=>({...x,round:e.target.value}))}/>
+                        <input style={{...C.inp,flex:1,minWidth:160}} value={editEv.teams} onChange={e=>setEditEv(x=>({...x,teams:e.target.value}))}/>
+                        <button style={C.bPrimary} onClick={saveEditEv}>Guardar</button>
+                        <button style={C.bGhost} onClick={()=>setEditEv(null)}>Cancelar</button>
+                      </div>
+                    )}
+                    {/* Apuestas */}
+                    {Object.keys(ev.bets).length>0&&(
+                      <div style={{marginTop:10,display:"flex",flexWrap:"wrap",gap:6}}>
+                        {players.filter(p=>ev.bets[p.id]).map(p=>{
+                          const b=ev.bets[p.id];
+                          return(
+                            <div key={p.id} style={{...C.betChip,fontSize:12}}>
+                              <div>
+                                <span style={{color:"#4ade80",fontWeight:700}}>{p.name}:</span>
+                                <span style={{color:"#94a3b8",marginLeft:4}}>{b.score} · {b.mvp}</span>
+                                {b.ts&&<span style={{color:"#475569",marginLeft:4,fontSize:10}}>{fmt(b.ts)}</span>}
+                              </div>
+                              <div style={{display:"flex",gap:4,marginLeft:8}}>
+                                <button style={C.bEditSm} onClick={()=>setEditBet({eid:ev.id,pid:p.id,score:b.score,mvp:b.mvp})}>✏️</button>
+                                <button style={C.bDelSm} onClick={()=>ask(`¿Borrar apuesta de ${p.name}?`,()=>doDeleteBet(ev.id,p.id))}>🗑️</button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {admin&&editBet?.eid===ev.id&&(
+                      <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap",alignItems:"center"}}>
+                        <span style={{color:"#f59e0b",fontSize:12}}>Editando {players.find(p=>p.id===editBet.pid)?.name}:</span>
+                        <input style={{...C.inp,width:90}} value={editBet.score} onChange={e=>setEditBet(x=>({...x,score:e.target.value}))}/>
+                        <input style={{...C.inp,flex:1,minWidth:120}} value={editBet.mvp} onChange={e=>setEditBet(x=>({...x,mvp:e.target.value}))}/>
+                        <button style={C.bPrimary} onClick={saveEditBet}>Guardar</button>
+                        <button style={C.bGhost} onClick={()=>setEditBet(null)}>Cancelar</button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── Partidos cerrados ── */}
+            {closedEvs.length>0&&(
+              <div style={C.card}>
+                <div style={{...C.label,fontSize:13,color:"#f59e0b",marginBottom:16}}>✅ Gestión partidos cerrados</div>
+                {closedEvs.map(ev=>(
+                  <div key={ev.id} style={{borderBottom:"1px solid #1e293b",paddingBottom:16,marginBottom:16}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
+                      <div>
+                        <div style={{color:"#4ade80",fontSize:12}}>{ev.round}</div>
+                        <div style={{color:"#f0fdf4",fontWeight:700}}>{ev.teams}</div>
+                        <div style={{color:"#f59e0b",fontWeight:700}}>{ev.result.score} · MVP: {ev.result.mvp}</div>
+                      </div>
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                        <button style={C.bEdit} onClick={()=>setEditRes({eid:ev.id,score:ev.result.score,mvp:ev.result.mvp})}>✏️ Editar resultado</button>
+                        <button style={C.bEdit} onClick={()=>ask("¿Reabrir este partido?",()=>reopenEvent(ev.id))}>🔓 Reabrir</button>
+                        <button style={C.bDel}  onClick={()=>ask(`¿Borrar "${ev.teams}" y todas sus apuestas?`,()=>doDeleteEvent(ev.id))}>🗑️ Borrar</button>
+                      </div>
+                    </div>
+                    {editRes?.eid===ev.id&&(
+                      <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>
+                        <input style={{...C.inp,width:90}} value={editRes.score} onChange={e=>setEditRes(x=>({...x,score:e.target.value}))}/>
+                        <input style={{...C.inp,flex:1,minWidth:140}} value={editRes.mvp} onChange={e=>setEditRes(x=>({...x,mvp:e.target.value}))}/>
+                        <button style={C.bPrimary} onClick={saveEditRes}>Guardar</button>
+                        <button style={C.bGhost} onClick={()=>setEditRes(null)}>Cancelar</button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── Resultados históricos Jornada 1 ── */}
+            <div style={C.card}>
+              <div style={{...C.label,fontSize:13,color:"#f59e0b",marginBottom:16}}>📜 Gestión Jornada 1 (histórico)</div>
+              {completed.filter(m=>!events.find(e=>e.id===m.id)).map(m=>(
+                <div key={m.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid #1e293b",paddingBottom:10,marginBottom:10,flexWrap:"wrap",gap:8}}>
+                  {editHist?.id===m.id
+                    ?<div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",width:"100%"}}>
+                       <span style={{color:"#e2e8f0",fontWeight:600,minWidth:160}}>{m.teams}</span>
+                       <input style={{...C.inp,width:80}} value={editHist.score} onChange={e=>setEditHist(x=>({...x,score:e.target.value}))} placeholder="X-Y"/>
+                       <input style={{...C.inp,width:150}} value={editHist.mvp} onChange={e=>setEditHist(x=>({...x,mvp:e.target.value}))} placeholder="MVP"/>
+                       <button style={C.bPrimary} onClick={saveEditHist}>Guardar</button>
+                       <button style={C.bGhost} onClick={()=>setEditHist(null)}>Cancelar</button>
+                     </div>
+                    :<>
+                       <span style={{color:"#e2e8f0",fontWeight:600}}>{m.teams}</span>
+                       <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                         <span style={{color:"#f59e0b",fontWeight:700}}>{m.score}</span>
+                         <span style={{color:"#94a3b8",fontSize:12}}>MVP: {m.mvp}</span>
+                         <button style={C.bEdit} onClick={()=>setEditHist({id:m.id,score:m.score,mvp:m.mvp})}>✏️</button>
+                         <button style={C.bDel}  onClick={()=>ask(`¿Borrar "${m.teams}"?`,()=>doDeleteHist(m.id))}>🗑️</button>
+                       </div>
+                     </>
+                  }
+                </div>
+              ))}
+              <button style={{...C.bDanger,marginTop:8}} onClick={()=>ask("¿Eliminar TODOS los partidos de la Jornada 1?",clearHistorical)}>
+                🗑️ Borrar toda la Jornada 1
+              </button>
+            </div>
+
+          </div>
+        )}
+
+      </main>
+    </div>
+  );
+}
+
+// ── Componente de tabla de desglose ──────────────────────────────────────────
+function BetTable({matches,players,showRound}) {
+  return(
+    <div style={{overflowX:"auto"}}>
+      <table style={C.table}>
+        <thead>
+          <tr>
+            <th style={C.th}>Partido{showRound?" / Ronda":""}</th>
+            <th style={C.th}>Oficial</th>
+            {players.map(p=><th key={p.id} style={{...C.th,minWidth:115}}>{p.name}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {matches.map(m=>(
+            <tr key={m.id}>
+              <td style={{...C.td,fontWeight:600,minWidth:160}}>
+                {m.teams}
+                {m.roundLabel&&<div style={{fontSize:11,color:"#4ade80"}}>{m.roundLabel}</div>}
+              </td>
+              <td style={{...C.td,whiteSpace:"nowrap"}}>
+                <div style={{color:"#f59e0b",fontWeight:700}}>{m.score}</div>
+                <div style={{color:"#94a3b8",fontSize:11}}>MVP: {m.mvp}</div>
+              </td>
+              {players.map(p=>{
+                const bet=m.bets?.[p.id];
+                const {winner,exact,mvp,total}=calcPts(m,bet);
+                const pleno=total===15;
+                return(
+                  <td key={p.id} style={{...C.td,textAlign:"center",verticalAlign:"top",padding:"8px 6px"}}>
+                    {bet?(
+                      <>
+                        <div style={{fontSize:11,color:"#64748b",marginBottom:1}}>Marcador</div>
+                        <div style={{fontSize:13,fontWeight:700,color:exact?"#4ade80":winner?"#facc15":"#f87171"}}>
+                          {bet.score} <span style={{fontSize:10}}>{exact?"✓✓":winner?"✓":"✗"}</span>
+                        </div>
+                        <div style={{fontSize:11,color:"#64748b",marginTop:4,marginBottom:1}}>MVP</div>
+                        <div style={{fontSize:11,fontWeight:600,color:mvp?"#4ade80":"#f87171"}}>
+                          {bet.mvp} <span>{mvp?"✓":"✗"}</span>
+                        </div>
+                        <div style={{fontWeight:900,fontSize:15,marginTop:5,borderTop:"1px solid #1e293b",paddingTop:4,
+                          color:pleno?"#c084fc":total>=10?"#22d3ee":total>=5?"#a3e635":"#475569"}}>
+                          {total>0?`+${total}pts`:"0"}{pleno?" ★":""}
+                        </div>
+                      </>
+                    ):<span style={{color:"#334155"}}>—</span>}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Estilos ──────────────────────────────────────────────────────────────────
+const C = {
+  root:     {minHeight:"100vh",background:"#020617",color:"#e2e8f0",fontFamily:"'Inter','Segoe UI',sans-serif",fontSize:14},
+  header:   {background:"linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f2a1a 100%)",borderBottom:"2px solid #1e3a2f",padding:"20px 24px"},
+  hInner:   {maxWidth:1200,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:16},
+  logo:     {display:"flex",alignItems:"center",gap:14},
+  logoT:    {fontSize:26,fontWeight:900,letterSpacing:"-0.5px",color:"#f0fdf4"},
+  logoS:    {fontSize:12,color:"#4ade80",letterSpacing:"2px",textTransform:"uppercase"},
+  scoreboard:{display:"flex",gap:10,flexWrap:"wrap"},
+  miniScore:{display:"flex",alignItems:"center",gap:6,background:"#0f172a",border:"1px solid #1e3a2f",borderRadius:8,padding:"6px 12px"},
+  nav:      {display:"flex",borderBottom:"1px solid #1e293b",background:"#0f172a",overflowX:"auto"},
+  tabBtn:   {padding:"14px 22px",background:"none",border:"none",color:"#64748b",cursor:"pointer",fontSize:14,fontWeight:600,whiteSpace:"nowrap",borderBottom:"3px solid transparent"},
+  tabOn:    {color:"#4ade80",borderBottom:"3px solid #4ade80"},
+  loginBar: {background:"#0f172a",borderBottom:"1px solid #f59e0b44",padding:"14px 24px",display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"},
+  notif:    {position:"fixed",top:20,right:20,zIndex:999,padding:"12px 24px",borderRadius:10,color:"white",fontWeight:700,fontSize:15,boxShadow:"0 8px 32px rgba(0,0,0,0.4)"},
+  overlay:  {position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:998,display:"flex",alignItems:"center",justifyContent:"center",padding:20},
+  dialog:   {background:"#0f172a",border:"1px solid #dc262644",borderRadius:16,padding:"32px 28px",maxWidth:420,width:"100%"},
+  main:     {maxWidth:1200,margin:"0 auto",padding:"28px 20px 60px"},
+  h2:       {fontSize:20,fontWeight:800,color:"#f0fdf4",marginBottom:16,marginTop:0},
+  card:     {background:"#0f172a",border:"1px solid #1e293b",borderRadius:14,padding:"20px 24px",marginBottom:16},
+  row:      {display:"flex",alignItems:"center"},
+  empty:    {color:"#475569",textAlign:"center",padding:"40px 20px",fontSize:16},
+  label:    {color:"#94a3b8",fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",marginBottom:8},
+  inp:      {background:"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"9px 13px",color:"#e2e8f0",fontSize:14,outline:"none"},
+  sel:      {background:"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"9px 13px",color:"#e2e8f0",fontSize:14,outline:"none",minWidth:120},
+  betChip:  {display:"flex",alignItems:"center",background:"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"7px 12px",flexWrap:"wrap",gap:4},
+  betChipEmpty:{display:"flex",alignItems:"center",background:"#0f172a",border:"1px solid #1e293b",borderRadius:8,padding:"7px 12px"},
+  table:    {width:"100%",borderCollapse:"collapse",fontSize:13},
+  th:       {padding:"8px 10px",textAlign:"left",background:"#1e293b",color:"#64748b",fontWeight:700,fontSize:11,textTransform:"uppercase",letterSpacing:"1px",whiteSpace:"nowrap"},
+  td:       {padding:"8px 10px",borderBottom:"1px solid #1e293b",color:"#e2e8f0",whiteSpace:"nowrap"},
+  chip:     {background:"#1e293b",border:"1px solid #334155",borderRadius:6,padding:"5px 10px",color:"#94a3b8",cursor:"pointer",fontSize:12},
+  chipOn:   {background:"#1e3a2f",borderColor:"#16a34a",color:"#4ade80"},
+  bPrimary: {background:"#16a34a",border:"none",borderRadius:8,padding:"9px 18px",color:"white",fontWeight:700,fontSize:14,cursor:"pointer",whiteSpace:"nowrap"},
+  bDanger:  {background:"#dc2626",border:"none",borderRadius:8,padding:"9px 18px",color:"white",fontWeight:700,fontSize:14,cursor:"pointer",whiteSpace:"nowrap"},
+  bOutline: {background:"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"6px 14px",color:"#94a3b8",cursor:"pointer",fontSize:13,fontWeight:600},
+  bGhost:   {background:"none",border:"none",color:"#64748b",cursor:"pointer",fontSize:13,padding:"4px 8px"},
+  bEdit:    {background:"#1e3a2f",border:"1px solid #16a34a44",borderRadius:6,padding:"4px 10px",color:"#4ade80",cursor:"pointer",fontSize:12,fontWeight:600},
+  bDel:     {background:"#2a0f0f",border:"1px solid #dc262644",borderRadius:6,padding:"4px 10px",color:"#f87171",cursor:"pointer",fontSize:12,fontWeight:600},
+  bEditSm:  {background:"none",border:"none",cursor:"pointer",fontSize:13,padding:"0 3px"},
+  bDelSm:   {background:"none",border:"none",cursor:"pointer",fontSize:13,padding:"0 3px"},
+};
